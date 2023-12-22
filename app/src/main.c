@@ -9,7 +9,7 @@
 
 LOG_MODULE_REGISTER(o_invader_main, LOG_LEVEL_DBG);
 
-void main(void)
+int main(void)
 {
 //    NRF_TIMER1->BITMODE = TIMER_BITMODE_BITMODE_32Bit << TIMER_BITMODE_BITMODE_Pos;
 //    NRF_TIMER1->TASKS_CLEAR = 1;
