@@ -6,6 +6,8 @@
 #include "components/bluetooth/bluetooth_core.h"
 #include "components/logging/logging.h"
 #include "components/device_state/battery_state.h"
+#include "components/data_provider/spi_scraper.h"
+#include "components/utils/led_indication.h"
 
 LOG_MODULE_REGISTER(o_invader_main, LOG_LEVEL_DBG);
 
@@ -27,15 +29,18 @@ int main(void)
 
 
     LOG_INF("Starting up...\n");
+    led_indication_init();
     logging_initialize();
     bt_core_initialize();
     battery_state_initialize();
     update_battery_level();
 
     LOG_INF("All up and running!\n");
+//    spi_sniffer_thread();
+
     while(1) {
-//        update_battery_level();
-//        k_sleep(K_MSEC(4000));
+        led_blink();
+        k_sleep(K_MSEC(4000));
     }
 
 }
