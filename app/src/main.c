@@ -2,6 +2,7 @@
 #include <zephyr/sys/printk.h>
 
 #include <zephyr/logging/log.h>
+#include <zephyr/drivers/gpio.h>
 
 #include "components/bluetooth/bluetooth_core.h"
 #include "components/logging/logging.h"
@@ -30,17 +31,15 @@ int main(void)
 
     LOG_INF("Starting up...\n");
     led_indication_init();
+    spi_scraper_init();
     logging_initialize();
     bt_core_initialize();
     battery_state_initialize();
     update_battery_level();
 
     LOG_INF("All up and running!\n");
-//    spi_sniffer_thread();
 
     while(1) {
-        led_blink();
-        k_sleep(K_MSEC(4000));
-    }
 
+    }
 }

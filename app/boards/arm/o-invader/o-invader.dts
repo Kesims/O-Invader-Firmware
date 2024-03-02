@@ -18,12 +18,47 @@
 
     leds {
         compatible = "gpio-leds";
-        status = "okay";
+        led0: led_0 {
+            gpios = <&gpio0 10 GPIO_ACTIVE_HIGH>;
+            label = "LED 0";
+        };
         led1: led_1 {
-            gpios = <&gpio0 9 GPIO_ACTIVE_LOW>;
+            gpios = <&gpio0 9 GPIO_ACTIVE_HIGH>;
             label = "LED 1";
         };
     };
+
+    sniffer {
+        compatible = "gpio-keys";
+        clck0: clck_0 {
+            gpios = <&gpio0 5 GPIO_ACTIVE_HIGH>;
+            label = "sniffer_clk";
+        };
+
+        reset0: reset_0 {
+            gpios = <&gpio0 30 GPIO_ACTIVE_HIGH>;
+            label = "sniffer_reset";
+        };
+
+        cs0: cs_0 {
+            gpios = <&gpio0 4 GPIO_ACTIVE_HIGH>;
+            label = "sniffer_cs";
+        };
+
+        mosi0: mosi_0 {
+            gpios = <&gpio1 9 GPIO_ACTIVE_HIGH>;
+            label = "sniffer_mosi";
+        };
+    };
+
+    aliases {
+        led0 = &led0;
+        led1 = &led1;
+    };
+};
+
+&gpiote {
+    status = "okay";
 };
 
 &gpio0 {
@@ -32,6 +67,10 @@
 
 &gpio1 {
     status = "okay";
+};
+
+&uicr {
+    gpio-as-nreset;
 };
 
 &ieee802154 {
