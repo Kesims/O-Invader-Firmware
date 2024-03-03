@@ -119,12 +119,6 @@ static void init_interrupts()
         return;
     }
 
-//    ret = gpio_pin_interrupt_configure_dt(&sniff_clck_gpio, GPIO_INT_EDGE_RISING);
-//    if (ret < 0) {
-//        LOG_ERR("Error configuring clock pin interrupt: %d", ret);
-//        return;
-//    }
-
     ret = gpio_pin_interrupt_configure_dt(&sniff_cs_gpio, GPIO_INT_EDGE_RISING);
     if (ret < 0) {
         LOG_ERR("Error configuring chip select pin interrupt: %d", ret);
@@ -168,7 +162,7 @@ void spi_sniffer(void *arg1, void *arg2, void *arg3)
     int last_debug_state = 0;
     while (1) {
         if (!scrape_enabled || buffer_overflow) {
-            k_sleep(K_USEC(1));
+            k_sleep(K_USEC(10));
             continue;
         }
 

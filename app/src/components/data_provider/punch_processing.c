@@ -1,6 +1,7 @@
 #include "punch_processing.h"
 #include <zephyr/logging/log.h>
 #include <zephyr/kernel.h>
+#include "punch_provider.h"
 
 LOG_MODULE_REGISTER(punch_processing, LOG_LEVEL_DBG);
 
@@ -14,11 +15,11 @@ LOG_MODULE_REGISTER(punch_processing, LOG_LEVEL_DBG);
 
 uint8_t punch_buffer[PUNCH_BUFFER_SIZE] = {0};
 
-
 static K_THREAD_STACK_DEFINE(punch_stack_area, 512);
 struct k_work punch_work;
 struct k_work_q punch_work_queue;
 
+// Retrieves the data from interrupt in spi_scraper, and submits it to the punch processing work queue
 void process_punch(uint8_t *punch_data)
 {
     memcpy(punch_buffer, punch_data, PUNCH_BUFFER_SIZE);
@@ -36,13 +37,21 @@ void get_punch_values_from_data(uint8_t *punch_data)
     uint8_t day = (punch_data[8] >> 1) & 0x1F;
     bool is_pm = punch_data[8] & 0x01;
     uint16_t seconds = (punch_data[9] << 8) | punch_data[10];
-    float fraction = punch_data[11] / 256.0f;
+    uint8_t fraction = punch_data[11];
 
 
     // Print the punch data
     LOG_INF("SI number: %u\n", si_number);
     LOG_INF("Date: %u-%u-%u\n", year, month, day);
-    LOG_INF("Time: %u:%u:%u.%u\n", seconds / 3600 + (is_pm ? 12 : 0), (seconds / 60) % 60, seconds % 60, (int)(fraction * 1000));
+    LOG_INF("Time: %u:%u:%u.%u\n", seconds / 3600 + (is_pm ? 12 : 0), (seconds / 60) % 60, seconds % 60, ((int)(fraction * 1000) / 256.0f));
+
+    punch_data_t punch = {
+            .si_number = si_number
+    };
+    char iso8601_time[20];
+    sprintf(iso8601_time, "%u-%u-%uT%u:%u:%u.%u", year, month, day, seconds / 3600 + (is_pm ? 12 : 0), (seconds / 60) % 60, seconds % 60, (uint32_t)(fraction * 1000) / 256);
+    memcpy(punch.iso8601_time, iso8601_time, 20);
+    store_punch(punch);
 }
 
 void offload_function(struct k_work *work)
