@@ -48,7 +48,7 @@ void battery_update_timer_handler(struct k_timer *timer)
 {
     k_work_submit(&battery_update_work);
 }
-K_TIMER_DEFINE(battery_update_timer, battery_update_work_handler, NULL);
+K_TIMER_DEFINE(battery_update_timer, (void (*)(struct k_timer *)) battery_update_work_handler, NULL);
 
 void battery_state_initialize()
 {

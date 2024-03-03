@@ -32,14 +32,10 @@ int main(void)
     LOG_INF("Starting up...\n");
     led_indication_init();
     spi_scraper_init();
-    logging_initialize();
-    bt_core_initialize();
-    battery_state_initialize();
-    update_battery_level();
+//    logging_initialize();
+//    bt_core_initialize();
+//    battery_state_initialize();
+//    update_battery_level();
 
     LOG_INF("All up and running!\n");
-
-    while(1) {
-
-    }
 }
