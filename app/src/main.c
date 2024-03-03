@@ -9,6 +9,7 @@
 #include "components/device_state/battery_state.h"
 #include "components/data_provider/spi_scraper.h"
 #include "components/utils/led_indication.h"
+#include "data_provider/punch_processing.h"
 
 LOG_MODULE_REGISTER(o_invader_main, LOG_LEVEL_DBG);
 
@@ -32,10 +33,11 @@ int main(void)
     LOG_INF("Starting up...\n");
     led_indication_init();
     spi_scraper_init();
-//    logging_initialize();
-//    bt_core_initialize();
-//    battery_state_initialize();
-//    update_battery_level();
+    logging_initialize();
+    bt_core_initialize();
+    battery_state_initialize();
+    update_battery_level();
+    initialize_punch_processing();
 
     LOG_INF("All up and running!\n");
 }

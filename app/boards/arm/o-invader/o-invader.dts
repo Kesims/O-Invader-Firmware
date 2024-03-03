@@ -45,11 +45,6 @@
             label = "sniffer_cs";
         };
 
-        debug0: debug_0 {
-            gpios = <&gpio0 17 GPIO_ACTIVE_HIGH>;
-            label = "debug";
-        };
-
         mosi0: mosi_0 {
             gpios = <&gpio1 9 GPIO_ACTIVE_HIGH>;
             label = "sniffer_mosi";
