@@ -12,7 +12,7 @@ void initialize_punch_processing();
 
 typedef struct punch_data_t {
     uint32_t si_number;
-    char iso8601_time[20];
+    char iso8601_time[21];
 } punch_data_t;
 
 #endif //BUGPACK_BASE_PUNCH_PROCESSING_H

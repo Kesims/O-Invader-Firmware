@@ -1,6 +1,4 @@
-#include <zephyr/kernel.h>
 #include <zephyr/sys/printk.h>
-
 #include <zephyr/logging/log.h>
 #include <zephyr/drivers/gpio.h>
 
@@ -10,6 +8,7 @@
 #include "components/data_provider/spi_scraper.h"
 #include "components/utils/led_indication.h"
 #include "data_provider/punch_processing.h"
+#include "utils/watchdog.h"
 
 LOG_MODULE_REGISTER(o_invader_main, LOG_LEVEL_DBG);
 
@@ -31,6 +30,7 @@ int main(void)
 
 
     LOG_INF("Starting up...\n");
+    watchdog_init();
     led_indication_init();
     spi_scraper_init();
     logging_initialize();
@@ -40,4 +40,9 @@ int main(void)
     initialize_punch_processing();
 
     LOG_INF("All up and running!\n");
+
+    while(1) {
+        k_sleep(K_MSEC(250));
+        watchdog_feed(); // TODO make the watchdog properly checkout all threads
+    }
 }

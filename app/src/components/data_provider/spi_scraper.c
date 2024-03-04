@@ -62,7 +62,7 @@ void spi_cs_triggered_cb(const struct device *dev, struct gpio_callback *cb, uin
     scrape_buffer_bit_index = 0;
     buffer_overflow = false;
 
-    memset(scrape_buffer, 0, sizeof(scrape_buffer));
+//    memset(scrape_buffer, 0, sizeof(scrape_buffer));
 }
 
 static void initialize_inputs()
@@ -159,10 +159,12 @@ void spi_scraper_init()
 void spi_sniffer(void *arg1, void *arg2, void *arg3)
 {
     int last_clck_state = 0;
-    int last_debug_state = 0;
     while (1) {
         if (!scrape_enabled || buffer_overflow) {
-            k_sleep(K_USEC(10));
+            k_sleep(K_USEC(50)); // WARNING! Currently, 50us is ok, but if there was a need to capture some other
+                                        // specific data, this might need to be lowered to around 5us. Higher is better
+                                        // because of power consumption.
+
             continue;
         }
 

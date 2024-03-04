@@ -26,23 +26,23 @@ static ssize_t char20_read_cb(struct bt_conn *conn, const struct bt_gatt_attr *a
 }
 
 bool send_punches_available = false;
-//bool send_storage_overflow = false;
-//bool send_punch_si_number = false;
+bool send_storage_overflow = false;
+bool send_punch_si_number = false;
 
 void cccd_changed_punches_cb(const struct bt_gatt_attr *attr, uint16_t value)
 {
     send_punches_available = (value == BT_GATT_CCC_NOTIFY);
 }
 
-//void cccd_changed_overflow_cb(const struct bt_gatt_attr *attr, uint16_t value)
-//{
-//    send_storage_overflow = (value == BT_GATT_CCC_NOTIFY);
-//}
-//
-//void cccd_changed_si_number_cb(const struct bt_gatt_attr *attr, uint16_t value)
-//{
-//    send_punch_si_number = (value == BT_GATT_CCC_NOTIFY);
-//}
+void cccd_changed_overflow_cb(const struct bt_gatt_attr *attr, uint16_t value)
+{
+    send_storage_overflow = (value == BT_GATT_CCC_NOTIFY);
+}
+
+void cccd_changed_si_number_cb(const struct bt_gatt_attr *attr, uint16_t value)
+{
+    send_punch_si_number = (value == BT_GATT_CCC_NOTIFY);
+}
 
 int next_punch_write(struct bt_conn *conn, const struct bt_gatt_attr *attr, const void *buf, uint16_t len, uint16_t offset, uint8_t flags)
 {
@@ -82,10 +82,10 @@ BT_GATT_SERVICE_DEFINE(
                 NULL, // Write callback
                 &storage_overflow // User data
         ),
-//        BT_GATT_CCC(
-//                cccd_changed_overflow_cb,
-//                BT_GATT_PERM_READ | BT_GATT_PERM_WRITE
-//        ),
+        BT_GATT_CCC(
+                cccd_changed_overflow_cb,
+                BT_GATT_PERM_READ | BT_GATT_PERM_WRITE
+        ),
         BT_GATT_CHARACTERISTIC(
             BT_UUID_PUNCH_SI_NUMBER, // UUID
             BT_GATT_CHRC_READ | BT_GATT_CHRC_NOTIFY, // Properties
@@ -94,10 +94,10 @@ BT_GATT_SERVICE_DEFINE(
             NULL, // Write callback
             &current_punch.si_number // User data
         ),
-//        BT_GATT_CCC(
-//                cccd_changed_si_number_cb,
-//                BT_GATT_PERM_READ | BT_GATT_PERM_WRITE
-//        ),
+        BT_GATT_CCC(
+                cccd_changed_si_number_cb,
+                BT_GATT_PERM_READ | BT_GATT_PERM_WRITE
+        ),
         BT_GATT_CHARACTERISTIC(
             BT_UUID_PUNCH_TIME, // UUID
             BT_GATT_CHRC_READ, // Properties
@@ -137,13 +137,13 @@ void punches_available_notify(uint8_t value)
 
 void storage_overflow_notify(uint8_t value)
 {
-//    if(!send_storage_overflow) return;
-//    bt_gatt_notify(NULL, &punch_information_service.attrs[5], &value, sizeof(value));
+    if(!send_storage_overflow) return;
+    bt_gatt_notify(NULL, &punch_information_service.attrs[7], &value, sizeof(value));
 }
 
 void punch_si_number_notify(uint32_t value)
 {
-//    if(!send_punch_si_number) return;
-//    bt_gatt_notify(NULL, &punch_information_service.attrs[7], &value, sizeof(value));
+    if(!send_punch_si_number) return;
+    bt_gatt_notify(NULL, &punch_information_service.attrs[9], &value, sizeof(value));
 }
 

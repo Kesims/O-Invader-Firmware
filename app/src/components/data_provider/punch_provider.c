@@ -1,5 +1,10 @@
 #include "punch_provider.h"
 #include "bluetooth/punch_information_service.h"
+#include <zephyr/logging/log.h>
+
+
+LOG_MODULE_REGISTER(punch_provider, LOG_LEVEL_DBG);
+
 
 punch_data_t current_punch;
 bool storage_overflow = false;
@@ -28,6 +33,9 @@ void store_punch(punch_data_t new_punch) {
     // Move the end pointer forward, wrapping around to the start if necessary
     punch_storage_end = (punch_storage_end + 1) % PUNCH_STORAGE_SIZE;
     punches_available_notify(stored_punch_count);
+
+    LOG_INF("SI number: %u\n", new_punch.si_number);
+    LOG_INF("Time: %s\n", new_punch.iso8601_time);
 }
 
 int retrieve_next_punch() {

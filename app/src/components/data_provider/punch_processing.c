@@ -15,7 +15,7 @@ LOG_MODULE_REGISTER(punch_processing, LOG_LEVEL_DBG);
 
 uint8_t punch_buffer[PUNCH_BUFFER_SIZE] = {0};
 
-static K_THREAD_STACK_DEFINE(punch_stack_area, 512);
+static K_THREAD_STACK_DEFINE(punch_stack_area, 2048);
 struct k_work punch_work;
 struct k_work_q punch_work_queue;
 
@@ -41,16 +41,14 @@ void get_punch_values_from_data(uint8_t *punch_data)
 
 
     // Print the punch data
+    LOG_INF("NEW PUNCH ----- \n");
     LOG_INF("SI number: %u\n", si_number);
-    LOG_INF("Date: %u-%u-%u\n", year, month, day);
-    LOG_INF("Time: %u:%u:%u.%u\n", seconds / 3600 + (is_pm ? 12 : 0), (seconds / 60) % 60, seconds % 60, ((int)(fraction * 1000) / 256.0f));
 
-    punch_data_t punch = {
-            .si_number = si_number
-    };
-    char iso8601_time[20];
-    sprintf(iso8601_time, "%u-%u-%uT%u:%u:%u.%u", year, month, day, seconds / 3600 + (is_pm ? 12 : 0), (seconds / 60) % 60, seconds % 60, (uint32_t)(fraction * 1000) / 256);
-    memcpy(punch.iso8601_time, iso8601_time, 20);
+    punch_data_t punch = {0};
+    punch.si_number = si_number;
+    char iso8601_time[21] = {0};
+    sprintf(iso8601_time, "%04u-%02u-%02uT%02u:%02u:%02u.%03u", year, month, day, seconds / 3600 + (is_pm ? 12 : 0), (seconds / 60) % 60, seconds % 60, (uint32_t)(fraction * 1000) / 256);
+    strncpy(punch.iso8601_time, iso8601_time, sizeof(punch.iso8601_time) - 1); // Ensure null termination
     store_punch(punch);
 }
 

@@ -1,18 +1,22 @@
 #include "configuration_service.h"
 
 #include <zephyr/logging/log.h>
+#include <zephyr/sys/reboot.h>
+
 
 LOG_MODULE_REGISTER(configuration_service, LOG_LEVEL_DBG);
 
 uint8_t data_channel = 0;
+uint8_t station_number = 0;
+char station_alias[20] = "Station 1";
 
-static ssize_t read_cb(struct bt_conn *conn, const struct bt_gatt_attr *attr, void *buf, uint16_t len, uint16_t offset)
+static ssize_t byte_read_cb(struct bt_conn *conn, const struct bt_gatt_attr *attr, void *buf, uint16_t len, uint16_t offset)
 {
-    const char *value = attr->user_data;
+    const uint8_t *value = attr->user_data;
     return bt_gatt_attr_read(conn, attr, buf, len, offset, value, sizeof(*value));
 }
 
-static ssize_t write_callback (struct bt_conn *conn, const struct bt_gatt_attr *attr, const void *buf, uint16_t len, uint16_t offset, uint8_t flags)
+static ssize_t byte_write_callback(struct bt_conn *conn, const struct bt_gatt_attr *attr, const void *buf, uint16_t len, uint16_t offset, uint8_t flags)
 {
     uint8_t *value = attr->user_data;
     if (offset + len > sizeof(*value)) {
@@ -20,9 +24,42 @@ static ssize_t write_callback (struct bt_conn *conn, const struct bt_gatt_attr *
     }
 
     memcpy(value + offset, buf, len);
-    data_channel = *value;
     return len;
 }
+
+static ssize_t char20_read_cb(struct bt_conn *conn, const struct bt_gatt_attr *attr, void *buf, uint16_t len, uint16_t offset)
+{
+    const char *value = attr->user_data;
+    return bt_gatt_attr_read(conn, attr, buf, len, offset, value, 20);
+}
+
+static ssize_t char20_write_cb(struct bt_conn *conn, const struct bt_gatt_attr *attr, const void *buf, uint16_t len, uint16_t offset, uint8_t flags)
+{
+    char *value = attr->user_data;
+    if (offset + len > 20) {
+        return BT_GATT_ERR(BT_ATT_ERR_INVALID_OFFSET);
+    }
+
+    memcpy(value + offset, buf, len);
+    return len;
+}
+
+static ssize_t write_ident_cb(struct bt_conn *conn, const struct bt_gatt_attr *attr, const void *buf, uint16_t len, uint16_t offset, uint8_t flags)
+{
+    // run led IDENT
+
+    return len;
+}
+
+static ssize_t write_restart_cb(struct bt_conn *conn, const struct bt_gatt_attr *attr, const void *buf, uint16_t len, uint16_t offset, uint8_t flags)
+{
+    // restart the device
+    sys_reboot(SYS_REBOOT_COLD);
+    return len;
+}
+
+
+
 
 
 // Declare the configuration service
@@ -33,8 +70,40 @@ BT_GATT_SERVICE_DEFINE(
                 BT_UUID_DATA_CHANNEL, // UUID
                 BT_GATT_CHRC_READ | BT_GATT_CHRC_WRITE, // Properties
                 BT_GATT_PERM_READ | BT_GATT_PERM_WRITE, // Permissions
-                read_cb, // Read callback
-                write_callback, // Write callback
+                byte_read_cb, // Read callback
+                byte_write_callback, // Write callback
                 &data_channel // User data
+        ),
+        BT_GATT_CHARACTERISTIC(
+                BT_UUID_STATION_NUMBER, // UUID
+                BT_GATT_CHRC_READ | BT_GATT_CHRC_WRITE, // Properties
+                BT_GATT_PERM_READ | BT_GATT_PERM_WRITE, // Permissions
+                byte_read_cb, // Read callback
+                NULL, // Write callback
+                &station_number // User data
+        ),
+        BT_GATT_CHARACTERISTIC(
+                BT_UUID_STATION_ALIAS, // UUID
+                BT_GATT_CHRC_READ | BT_GATT_CHRC_WRITE, // Properties
+                BT_GATT_PERM_READ | BT_GATT_PERM_WRITE, // Permissions
+                char20_read_cb, // Read callback
+                char20_write_cb, // Write callback
+                &station_alias // User data
+        ),
+        BT_GATT_CHARACTERISTIC(
+                BT_UUID_IDENT, // UUID
+                BT_GATT_CHRC_WRITE, // Properties
+                BT_GATT_PERM_WRITE, // Permissions
+                NULL, // Read callback
+                write_ident_cb, // Write callback
+                NULL // User data
+        ),
+        BT_GATT_CHARACTERISTIC(
+                BT_UUID_RESTART, // UUID
+                BT_GATT_CHRC_WRITE, // Properties
+                BT_GATT_PERM_WRITE, // Permissions
+                NULL, // Read callback
+                write_restart_cb, // Write callback
+                NULL // User data
         ),
 );
