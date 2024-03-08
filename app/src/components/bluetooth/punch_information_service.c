@@ -20,7 +20,7 @@ static ssize_t uint32_read_cb(struct bt_conn *conn, const struct bt_gatt_attr *a
     return bt_gatt_attr_read(conn, attr, buf, len, offset, attr->user_data, sizeof(uint32_t));
 }
 
-static ssize_t char20_read_cb(struct bt_conn *conn, const struct bt_gatt_attr *attr, void *buf, uint16_t len, uint16_t offset)
+static ssize_t char80_read_cb(struct bt_conn *conn, const struct bt_gatt_attr *attr, void *buf, uint16_t len, uint16_t offset)
 {
     return bt_gatt_attr_read(conn, attr, buf, len, offset, attr->user_data, 20);
 }
@@ -99,12 +99,12 @@ BT_GATT_SERVICE_DEFINE(
                 BT_GATT_PERM_READ | BT_GATT_PERM_WRITE
         ),
         BT_GATT_CHARACTERISTIC(
-            BT_UUID_PUNCH_TIME, // UUID
-            BT_GATT_CHRC_READ, // Properties
-            BT_GATT_PERM_READ, // Permissions
-            char20_read_cb, // Read callback
-            NULL, // Write callback
-            &current_punch.iso8601_time // User data
+                BT_UUID_PUNCH_TIME, // UUID
+                BT_GATT_CHRC_READ, // Properties
+                BT_GATT_PERM_READ, // Permissions
+                char80_read_cb, // Read callback
+                NULL, // Write callback
+                &current_punch.iso8601_time // User data
         ),
 );
 

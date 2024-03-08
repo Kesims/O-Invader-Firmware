@@ -1,4 +1,5 @@
 #include "configuration_service.h"
+#include "utils/device_config.h"
 
 #include <zephyr/logging/log.h>
 #include <zephyr/sys/reboot.h>
@@ -6,9 +7,7 @@
 
 LOG_MODULE_REGISTER(configuration_service, LOG_LEVEL_DBG);
 
-uint8_t data_channel = 0;
-uint8_t station_number = 0;
-char station_alias[20] = "Station 1";
+extern device_config_t device_config;
 
 static ssize_t byte_read_cb(struct bt_conn *conn, const struct bt_gatt_attr *attr, void *buf, uint16_t len, uint16_t offset)
 {
@@ -22,25 +21,25 @@ static ssize_t byte_write_callback(struct bt_conn *conn, const struct bt_gatt_at
     if (offset + len > sizeof(*value)) {
         return BT_GATT_ERR(BT_ATT_ERR_INVALID_OFFSET);
     }
-
     memcpy(value + offset, buf, len);
+    flash_save_config();
     return len;
 }
 
-static ssize_t char20_read_cb(struct bt_conn *conn, const struct bt_gatt_attr *attr, void *buf, uint16_t len, uint16_t offset)
+static ssize_t char80_read_cb(struct bt_conn *conn, const struct bt_gatt_attr *attr, void *buf, uint16_t len, uint16_t offset)
 {
     const char *value = attr->user_data;
-    return bt_gatt_attr_read(conn, attr, buf, len, offset, value, 20);
+    return bt_gatt_attr_read(conn, attr, buf, len, offset, value, 80);
 }
 
-static ssize_t char20_write_cb(struct bt_conn *conn, const struct bt_gatt_attr *attr, const void *buf, uint16_t len, uint16_t offset, uint8_t flags)
+static ssize_t char80_write_cb(struct bt_conn *conn, const struct bt_gatt_attr *attr, const void *buf, uint16_t len, uint16_t offset, uint8_t flags)
 {
     char *value = attr->user_data;
-    if (offset + len > 20) {
+    if (offset + len > 80) {
         return BT_GATT_ERR(BT_ATT_ERR_INVALID_OFFSET);
     }
-
     memcpy(value + offset, buf, len);
+    flash_save_config();
     return len;
 }
 
@@ -53,13 +52,8 @@ static ssize_t write_ident_cb(struct bt_conn *conn, const struct bt_gatt_attr *a
 
 static ssize_t write_restart_cb(struct bt_conn *conn, const struct bt_gatt_attr *attr, const void *buf, uint16_t len, uint16_t offset, uint8_t flags)
 {
-    // restart the device
     sys_reboot(SYS_REBOOT_COLD);
-    return len;
 }
-
-
-
 
 
 // Declare the configuration service
@@ -72,23 +66,23 @@ BT_GATT_SERVICE_DEFINE(
                 BT_GATT_PERM_READ | BT_GATT_PERM_WRITE, // Permissions
                 byte_read_cb, // Read callback
                 byte_write_callback, // Write callback
-                &data_channel // User data
+                &device_config.data_channel // User data
         ),
         BT_GATT_CHARACTERISTIC(
                 BT_UUID_STATION_NUMBER, // UUID
                 BT_GATT_CHRC_READ | BT_GATT_CHRC_WRITE, // Properties
                 BT_GATT_PERM_READ | BT_GATT_PERM_WRITE, // Permissions
                 byte_read_cb, // Read callback
-                NULL, // Write callback
-                &station_number // User data
+                byte_write_callback, // Write callback
+                &device_config.station_number // User data
         ),
         BT_GATT_CHARACTERISTIC(
                 BT_UUID_STATION_ALIAS, // UUID
                 BT_GATT_CHRC_READ | BT_GATT_CHRC_WRITE, // Properties
                 BT_GATT_PERM_READ | BT_GATT_PERM_WRITE, // Permissions
-                char20_read_cb, // Read callback
-                char20_write_cb, // Write callback
-                &station_alias // User data
+                char80_read_cb, // Read callback
+                char80_write_cb, // Write callback
+                &device_config.station_alias // User data
         ),
         BT_GATT_CHARACTERISTIC(
                 BT_UUID_IDENT, // UUID

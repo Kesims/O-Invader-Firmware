@@ -9,6 +9,7 @@
 #include "components/utils/led_indication.h"
 #include "data_provider/punch_processing.h"
 #include "utils/watchdog.h"
+#include "utils/device_config.h"
 
 LOG_MODULE_REGISTER(o_invader_main, LOG_LEVEL_DBG);
 
@@ -30,6 +31,7 @@ int main(void)
 
 
     LOG_INF("Starting up...\n");
+    flash_storage_init();
     watchdog_init();
     led_indication_init();
     spi_scraper_init();
