@@ -47,3 +47,8 @@ void watchdog_feed()
 {
     wdt_feed(wdt, wdt_channel_id);
 }
+
+void watchdog_disable()
+{
+    wdt_disable(wdt);
+}

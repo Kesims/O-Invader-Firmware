@@ -11,5 +11,8 @@
 
 // Function prototypes
 void bt_core_initialize();
+void bt_start_advertising();
+void bt_pause_advertising();
+bool is_device_connected();
 
 #endif //BASE_BLUETOOTH_CORE_H

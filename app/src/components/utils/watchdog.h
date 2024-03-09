@@ -5,5 +5,6 @@
 
 int watchdog_init();
 void watchdog_feed();
+void watchdog_disable();
 
 #endif //BUGPACK_BASE_WATCHDOG_H

@@ -10,6 +10,7 @@
 #include "data_provider/punch_processing.h"
 #include "utils/watchdog.h"
 #include "utils/device_config.h"
+#include "utils/device_sleep.h"
 
 LOG_MODULE_REGISTER(o_invader_main, LOG_LEVEL_DBG);
 
@@ -40,11 +41,12 @@ int main(void)
     battery_state_initialize();
     update_battery_level();
     initialize_punch_processing();
+    device_sleep_init();
 
     LOG_INF("All up and running!\n");
 
     while(1) {
-        k_sleep(K_MSEC(250));
+        k_sleep(K_MSEC(5000));
         watchdog_feed(); // TODO make the watchdog properly checkout all threads
     }
 }

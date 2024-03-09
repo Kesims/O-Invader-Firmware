@@ -6,8 +6,11 @@
 #include <zephyr/sys/printk.h>
 #include <zephyr/kernel.h>
 #include "punch_processing.h"
+#include "../utils/device_sleep.h"
 
 LOG_MODULE_REGISTER(spi_scraper, LOG_LEVEL_DBG);
+
+K_THREAD_DEFINE(spi_sniffer_thread, 1024, spi_sniffer, NULL, NULL, NULL, 7, 0, 0);
 
 #define SNIFF_CLCK_NODE DT_NODELABEL(clck0)
 #define SNIFF_RESET_NODE DT_NODELABEL(reset0)
@@ -31,7 +34,7 @@ static uint8_t scrape_buffer_bit_index = 0;
 void spi_reset_change_cb(const struct device *dev, struct gpio_callback *cb, uint32_t pins)
 {
     int ret;
-
+    device_activate();
     ret = gpio_pin_get_dt(&sniff_reset_gpio);
     if (ret < 0) {
         LOG_ERR("Error reading reset pin: %d", ret);
@@ -40,8 +43,10 @@ void spi_reset_change_cb(const struct device *dev, struct gpio_callback *cb, uin
 
     if (ret > 0) {
         scrape_enabled = true;
+        k_thread_resume(spi_sniffer_thread);
     } else {
         scrape_enabled = false;
+        k_thread_suspend(spi_sniffer_thread);
     }
 }
 
@@ -149,6 +154,7 @@ void spi_scraper_init()
     initialize_inputs();
     init_callbacks();
     init_interrupts();
+    k_thread_suspend(spi_sniffer_thread); // Suspend the thread until the SPI communication is started
 
     LOG_INF("Interrupts initialized.\n");
 }
@@ -161,7 +167,7 @@ void spi_sniffer(void *arg1, void *arg2, void *arg3)
     int last_clck_state = 0;
     while (1) {
         if (!scrape_enabled || buffer_overflow) {
-            k_sleep(K_USEC(50)); // WARNING! Currently, 50us is ok, but if there was a need to capture some other
+            k_sleep(K_USEC(5)); // WARNING! Currently, 50us is ok, but if there was a need to capture some other
                                         // specific data, this might need to be lowered to around 5us. Higher is better
                                         // because of power consumption.
 
@@ -200,4 +206,3 @@ void spi_sniffer(void *arg1, void *arg2, void *arg3)
     }
 }
 
-K_THREAD_DEFINE(spi_sniffer_task, 1024, spi_sniffer, NULL, NULL, NULL, 7, 0, 0);
