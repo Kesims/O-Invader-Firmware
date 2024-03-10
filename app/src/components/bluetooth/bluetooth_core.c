@@ -6,6 +6,10 @@
 
 LOG_MODULE_REGISTER(bluetooth_core, LOG_LEVEL_DBG);
 
+
+uint8_t COMPANY_ID[] = { 0x00, 0x00};
+
+
 // Define the advertising data
 static const struct bt_data ad[] = {
         // Set the advertising flags

@@ -2,6 +2,7 @@
 #include <zephyr/logging/log.h>
 #include <zephyr/drivers/gpio.h>
 
+
 #include "components/bluetooth/bluetooth_core.h"
 #include "components/logging/logging.h"
 #include "components/device_state/battery_state.h"
@@ -28,8 +29,6 @@ int main(void)
 //
 //    printk("HF Clock has started. Startup time: %d uS\n", NRF_TIMER1->CC[0]);
 //    printk("All up and running!\n");
-
-
 
     LOG_INF("Starting up...\n");
     flash_storage_init();
