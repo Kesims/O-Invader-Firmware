@@ -13,6 +13,9 @@ LOG_MODULE_REGISTER(led_indication, LOG_LEVEL_DBG);
 static const struct gpio_dt_spec led0_gpio = GPIO_DT_SPEC_GET(LED0_NODE, gpios);
 static const struct gpio_dt_spec led1_gpio = GPIO_DT_SPEC_GET(LED1_NODE, gpios);
 
+struct k_work device_ident_work;
+void ident_device_work_handler(struct k_work *work);
+
 void led_indication_init() {
     int ret;
 
@@ -33,27 +36,27 @@ void led_indication_init() {
         return;
     }
 
+    k_work_init(&device_ident_work, ident_device_work_handler);
     LOG_INF("LED indication initialized.\n");
 }
 
-void led_blink() {
-    int ret;
-    LOG_INF("Blinking LED...\n");
-    ret = gpio_pin_set(led1_gpio.port, led1_gpio.pin, 0);
-    if (ret < 0) {
-        return;
-    }
-    k_sleep(K_MSEC(100));
-    ret = gpio_pin_set(led1_gpio.port, led1_gpio.pin, 1);
-    if (ret < 0) {
-        return;
+void green_toggle() {
+    gpio_pin_toggle(led1_gpio.port, led1_gpio.pin);
+}
+
+void red_toggle() {
+    gpio_pin_toggle(led0_gpio.port, led0_gpio.pin);
+}
+
+void ident_device_work_handler(struct k_work *work) {
+    for (int i = 0; i < 36; i++) {
+        green_toggle();
+        k_sleep(K_MSEC(200));
+        green_toggle();
+        k_sleep(K_MSEC(500));
     }
 }
 
-void red_led_toggle() {
-    int ret;
-    ret = gpio_pin_toggle(led0_gpio.port, led0_gpio.pin);
-    if (ret < 0) {
-        return;
-    }
+void ident_device() {
+    k_work_submit(&device_ident_work);
 }

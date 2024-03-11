@@ -1,5 +1,7 @@
 #include "configuration_service.h"
 #include "utils/device_config.h"
+#include "utils/device_sleep.h"
+#include "utils/led_indication.h"
 
 #include <zephyr/logging/log.h>
 #include <zephyr/sys/reboot.h>
@@ -45,8 +47,7 @@ static ssize_t char80_write_cb(struct bt_conn *conn, const struct bt_gatt_attr *
 
 static ssize_t write_ident_cb(struct bt_conn *conn, const struct bt_gatt_attr *attr, const void *buf, uint16_t len, uint16_t offset, uint8_t flags)
 {
-    // run led IDENT
-
+    ident_device();
     return len;
 }
 
@@ -55,6 +56,11 @@ static ssize_t write_restart_cb(struct bt_conn *conn, const struct bt_gatt_attr 
     sys_reboot(SYS_REBOOT_COLD);
 }
 
+static ssize_t write_sleep_cb(struct bt_conn *conn, const struct bt_gatt_attr *attr, const void *buf, uint16_t len, uint16_t offset, uint8_t flags)
+{
+    device_sleep();
+    return len;
+}
 
 // Declare the configuration service
 BT_GATT_SERVICE_DEFINE(
@@ -98,6 +104,14 @@ BT_GATT_SERVICE_DEFINE(
                 BT_GATT_PERM_WRITE, // Permissions
                 NULL, // Read callback
                 write_restart_cb, // Write callback
+                NULL // User data
+        ),
+        BT_GATT_CHARACTERISTIC(
+                BT_UUID_SLEEP, // UUID
+                BT_GATT_CHRC_WRITE, // Properties
+                BT_GATT_PERM_WRITE, // Permissions
+                NULL, // Read callback
+                write_sleep_cb, // Write callback
                 NULL // User data
         ),
 );

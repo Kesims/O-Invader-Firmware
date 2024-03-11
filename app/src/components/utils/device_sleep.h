@@ -6,5 +6,6 @@
 
 void device_activate();
 void device_sleep_init();
+void device_sleep();
 
 #endif //BUGPACK_BASE_DEVICE_SLEEP_H
